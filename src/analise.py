@@ -1,91 +1,48 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-
-# ------------------------------
-# TÍTULO
-# ------------------------------
-st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa das tabelas de renda e raça/idade usando gráficos de pizza com legenda.")
-
-# ------------------------------
-# LEITURA DOS DADOS
-# ------------------------------
-@st.cache_data
-def load_data():
-    renda = pd.read_csv("tabela2_renda.csv")
-    raca_idade = pd.read_csv("tabela_9_raca-idade.csv")
-    return renda, raca_idade
-
-renda, raca_idade = load_data()
-
-# ------------------------------
-# MENU LATERAL
-# ------------------------------
-menu = st.sidebar.selectbox(
-    "Selecione a análise:",
-    ["📊 Renda", "🧑🏽‍🧒🏿 Raça e Idade"]
-)
-
 # ------------------------------
 # ANÁLISE DE RENDA (PIZZA)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda (Pizza)")
+    st.header("📊 Distribuição de Renda por Gênero (Pizza)")
 
-    st.write("Gráfico em formato de pizza com legenda automática e percentuais.")
+    st.write("Gráfico em formato de pizza mostrando a distribuição da coluna escolhida separada por gênero.")
 
+    # Identificar colunas numéricas
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
+    
+    # Identificar colunas categóricas (para tentar achar 'gênero')
+    cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
 
-    if len(numeric_cols) == 0:
-        st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
+    # Tentar detectar automaticamente uma coluna de gênero
+    possiveis_generos = ["sexo", "genero", "gênero", "Gender", "gender", "Sexo"]
+    genero_col = None
+    for col in cat_cols:
+        if col.lower() in possiveis_generos:
+            genero_col = col
+            break
+
+    if genero_col is None:
+        st.error("Não foi possível identificar automaticamente uma coluna de gênero no CSV.")
     else:
-        coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
+        st.success(f"Coluna de gênero detectada: **{genero_col}**")
 
-        renda_grouped = renda[coluna].value_counts().reset_index()
-        renda_grouped.columns = ["Categoria", "Valor"]
+        if len(numeric_cols) == 0:
+            st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
+        else:
+            coluna = st.selectbox("Selecione a coluna de valores:", numeric_cols)
 
-        fig = px.pie(
-            renda_grouped,
-            names="Categoria",
-            values="Valor",
-            hole=0.4,
-            title=f"Distribuição da coluna: {coluna} (Pizza)",
-        )
+            # Agrupar os dados por gênero
+            renda_grouped = renda.groupby(genero_col)[coluna].sum().reset_index()
 
-        # Legenda + labels internas
-        fig.update_traces(textposition="inside", textinfo="percent+label")
+            fig = px.pie(
+                renda_grouped,
+                names=genero_col,
+                values=coluna,
+                color=genero_col,   # 🔥 GERA A LEGENDA AUTOMÁTICA
+                hole=0.4,
+                title=f"Distribuição da coluna '{coluna}' por gênero"
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+            # Labels + porcentagem + legenda ativa
+            fig.update_traces(textposition="inside", textinfo="percent+label")
 
-# ------------------------------
-# ANÁLISE DE RAÇA E IDADE (PIZZA)
-# ------------------------------
-else:
-    st.header("🧑🏽‍🧒🏿 Raça e Idade (Pizza)")
-
-    st.write("Gráfico em formato de pizza com legenda automática e percentuais.")
-
-    cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
-    num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
-
-    if len(cat_cols) < 1 or len(num_cols) < 1:
-        st.warning("Não foi possível identificar colunas categóricas e numéricas automaticamente.")
-    else:
-        cat = st.selectbox("Escolha a variável categórica:", cat_cols)
-        num = st.selectbox("Escolha a variável numérica (valor para o gráfico):", num_cols)
-
-        fig_pizza = px.pie(
-            raca_idade,
-            names=cat,
-            values=num,
-            title=f"Distribuição de {num} por {cat}",
-            hole=0.4
-        )
-
-        # labels dentro e legenda
-        fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
-
-        st.plotly_chart(fig_pizza, use_container_width=True)
-
-st.success("App carregado com sucesso!")
+            st.plotly_chart(fig, use_container_width=True)
