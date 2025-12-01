@@ -13,8 +13,8 @@ st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos 
 # ------------------------------
 @st.cache_data
 def load_data():
-    renda = pd.read_csv("data/tabela2_renda.csv")
-    raca_idade = pd.read_csv("data/tabela_9_raca-idade.csv")
+    renda = pd.read_csv("tabela2_renda.csv")
+    raca_idade = pd.read_csv("tabela_9_raca-idade.csv")
     return renda, raca_idade
 
 renda, raca_idade = load_data()
