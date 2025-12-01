@@ -28,7 +28,7 @@ def padronizar_genero(df):
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa do perfil da advocacia brasileira")
+st.write("Visualização interativa usando gráficos de pizza com legenda de gênero.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -57,7 +57,7 @@ menu = st.sidebar.selectbox(
 # ANÁLISE DE RENDA (PIZZA COM GÊNERO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda por Categoria")
+    st.header("📊 Distribuição de Renda por Categoria (Pizza)")
 
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
     cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
