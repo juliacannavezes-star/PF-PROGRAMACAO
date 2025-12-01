@@ -1,63 +1,97 @@
+import streamlit as st
 import pandas as pd
 import plotly.express as px
-from pathlib import Path
 
-# ================================
-# Carregar arquivos
-# ================================
-DATA_DIR = Path("./data")
+# ------------------------------
+# TÍTULO
+# ------------------------------
+st.title("Análise Interativa dos Dados – PF Programação")
+st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos CSV fornecidos.")
 
-df_renda = pd.read_csv(DATA_DIR / "tabela2_renda.csv")
-df_raca_idade = pd.read_csv(DATA_DIR / "tabela_9_raca-idade.csv")
+# ------------------------------
+# LEITURA DOS DADOS
+# ------------------------------
+@st.cache_data
+def load_data():
+    renda = pd.read_csv("data/tabela2_renda.csv")
+    raca_idade = pd.read_csv("data/tabela_9_raca-idade.csv")
+    return renda, raca_idade
 
-print("Arquivos carregados com sucesso!")
-print(df_renda.head())
-print(df_raca_idade.head())
+renda, raca_idade = load_data()
 
-# ================================
-# Gráfico 1 – Distribuição de renda
-# ================================
-fig1 = px.bar(
-    df_renda,
-    x=df_renda.columns[0],      # primeira coluna como eixo X
-    y=df_renda.columns[1],      # segunda como Y
-    title="Distribuição da renda (Tabela 2)",
-    labels={"x": "Categoria", "y": "Valor"}
-)
-fig1.show()
-
-# ================================
-# Gráfico 2 – População por raça e idade
-# ================================
-colunas = df_raca_idade.columns
-fig2 = px.line(
-    df_raca_idade,
-    x=colunas[1],  # Idade
-    y=colunas[2],  # População
-    color=colunas[0],  # Raça
-    title="População por raça e idade (Tabela 9)"
-)
-fig2.show()
-
-# ================================
-# Gráfico 3 – Heatmap raça × faixa etária
-# ================================
-if df_raca_idade[colunas[1]].dtype != "object":
-    df_raca_idade["faixa_etaria"] = pd.cut(
-        df_raca_idade[colunas[1]],
-        bins=10
-    )
-
-pivot = df_raca_idade.pivot_table(
-    values=colunas[2],
-    index="faixa_etaria",
-    columns=colunas[0],
-    aggfunc="sum"
+# ------------------------------
+# MENU LATERAL
+# ------------------------------
+menu = st.sidebar.selectbox(
+    "Selecione a análise:",
+    ["📊 Renda", "🧑🏽‍🧒🏿 Raça e Idade"]
 )
 
-fig3 = px.imshow(
-    pivot,
-    labels=dict(x="Raça", y="Faixa Etária", color="População"),
-    title="Heatmap – População por raça e faixa etária"
-)
-fig3.show()
+# ------------------------------
+# ANÁLISE DE RENDA
+# ------------------------------
+if menu == "📊 Renda":
+    st.header("📊 Distribuição de Renda")
+
+    st.write("Visualização interativa da tabela de renda.")
+
+    # Se existir uma coluna numérica de renda:
+    numeric_cols = renda.select_dtypes(include="number").columns.tolist()
+
+    if len(numeric_cols) == 0:
+        st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
+    else:
+        coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
+
+        fig = px.histogram(
+            renda,
+            x=coluna,
+            nbins=20,
+            title=f"Distribuição da coluna: {coluna}"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        fig2 = px.box(
+            renda,
+            y=coluna,
+            title=f"Boxplot da coluna: {coluna}"
+        )
+        st.plotly_chart(fig2, use_container_width=True)
+
+# ------------------------------
+# ANÁLISE DE RAÇA E IDADE
+# ------------------------------
+else:
+    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade")
+
+    st.write("Dados extraídos da tabela de raça por idade.")
+
+    # tenta identificar automaticamente colunas categóricas e numéricas
+    cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
+    num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
+
+    if len(cat_cols) < 1 or len(num_cols) < 1:
+        st.warning("Não foi possível identificar colunas categóricas e numéricas automaticamente.")
+    else:
+        cat = st.selectbox("Escolha a variável categórica:", cat_cols)
+        num = st.selectbox("Escolha a variável numérica:", num_cols)
+
+        fig = px.bar(
+            raca_idade,
+            x=cat,
+            y=num,
+            color=cat,
+            title=f"{num} por {cat}",
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        fig2 = px.scatter(
+            raca_idade,
+            x=cat,
+            y=num,
+            color=cat,
+            title=f"Relação entre {cat} e {num}",
+        )
+        st.plotly_chart(fig2, use_container_width=True)
+
+st.success("App carregado com sucesso!")
