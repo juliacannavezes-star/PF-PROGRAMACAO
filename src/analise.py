@@ -6,7 +6,7 @@ import plotly.express as px
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos CSV fornecidos.")
+st.write("Visualização interativa das tabelas de renda e raça/idade usando gráficos de pizza.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -28,14 +28,13 @@ menu = st.sidebar.selectbox(
 )
 
 # ------------------------------
-# ANÁLISE DE RENDA
+# ANÁLISE DE RENDA (AGORA SOMENTE PIZZA)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda")
+    st.header("📊 Distribuição de Renda (Pizza)")
 
-    st.write("Visualização interativa da tabela de renda.")
+    st.write("Todos os gráficos de renda foram convertidos para pizza. Selecione uma coluna numérica para visualizar sua distribuição.")
 
-    # Se existir uma coluna numérica de renda:
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
 
     if len(numeric_cols) == 0:
@@ -43,30 +42,27 @@ if menu == "📊 Renda":
     else:
         coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
 
-        fig = px.histogram(
-            renda,
-            x=coluna,
-            nbins=20,
-            title=f"Distribuição da coluna: {coluna}"
+        # Criando proporções da coluna selecionada
+        renda_grouped = renda[coluna].value_counts().reset_index()
+        renda_grouped.columns = ["Categoria", "Valor"]
+
+        fig = px.pie(
+            renda_grouped,
+            names="Categoria",
+            values="Valor",
+            hole=0.4,
+            title=f"Distribuição da coluna: {coluna} (Pizza)"
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        fig2 = px.box(
-            renda,
-            y=coluna,
-            title=f"Boxplot da coluna: {coluna}"
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-
 # ------------------------------
-# ANÁLISE DE RAÇA E IDADE
+# ANÁLISE DE RAÇA E IDADE (AGORA SOMENTE PIZZA)
 # ------------------------------
 else:
-    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade")
+    st.header("🧑🏽‍🧒🏿 Raça e Idade (Pizza)")
 
-    st.write("Dados extraídos da tabela de raça por idade.")
+    st.write("Todos os gráficos desta seção foram substituídos por gráficos de pizza.")
 
-    # tenta identificar automaticamente colunas categóricas e numéricas
     cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
 
@@ -74,30 +70,15 @@ else:
         st.warning("Não foi possível identificar colunas categóricas e numéricas automaticamente.")
     else:
         cat = st.selectbox("Escolha a variável categórica:", cat_cols)
-        num = st.selectbox("Escolha a variável numérica:", num_cols)
+        num = st.selectbox("Escolha a variável numérica (valor para o gráfico):", num_cols)
 
-        # ------------------------------
-        # GRÁFICO DE PIZZA
-        # ------------------------------
         fig_pizza = px.pie(
             raca_idade,
             names=cat,
             values=num,
             title=f"Distribuição de {num} por {cat}",
-            hole=0.3  # donut bonito 😎 (pode remover se quiser pizza completa)
+            hole=0.4
         )
         st.plotly_chart(fig_pizza, use_container_width=True)
-
-        # ------------------------------
-        # SCATTER (mantido)
-        # ------------------------------
-        fig2 = px.scatter(
-            raca_idade,
-            x=cat,
-            y=num,
-            color=cat,
-            title=f"Relação entre {cat} e {num}",
-        )
-        st.plotly_chart(fig2, use_container_width=True)
 
 st.success("App carregado com sucesso!")
