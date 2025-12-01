@@ -57,7 +57,7 @@ menu = st.sidebar.selectbox(
 # ANÁLISE DE RENDA (PIZZA COM GÊNERO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda por Categoria (Pizza)")
+    st.header("📊 Distribuição de Renda por Categoria")
 
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
     cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
