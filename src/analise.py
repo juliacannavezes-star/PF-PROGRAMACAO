@@ -76,15 +76,21 @@ else:
         cat = st.selectbox("Escolha a variável categórica:", cat_cols)
         num = st.selectbox("Escolha a variável numérica:", num_cols)
 
-        fig = px.bar(
+        # ------------------------------
+        # GRÁFICO DE PIZZA
+        # ------------------------------
+        fig_pizza = px.pie(
             raca_idade,
-            x=cat,
-            y=num,
-            color=cat,
-            title=f"{num} por {cat}",
+            names=cat,
+            values=num,
+            title=f"Distribuição de {num} por {cat}",
+            hole=0.3  # donut bonito 😎 (pode remover se quiser pizza completa)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_pizza, use_container_width=True)
 
+        # ------------------------------
+        # SCATTER (mantido)
+        # ------------------------------
         fig2 = px.scatter(
             raca_idade,
             x=cat,
