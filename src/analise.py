@@ -6,7 +6,7 @@ import plotly.express as px
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa das tabelas de renda e raça/idade.")
+st.write("Visualização interativa das tabelas de renda e raça/idade usando gráficos de pizza com legenda.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -24,7 +24,7 @@ renda, raca_idade = load_data()
 # ------------------------------
 menu = st.sidebar.selectbox(
     "Selecione a análise:",
-    ["📊 Renda", "Raça e Idade"]
+    ["📊 Renda", "🧑🏽‍🧒🏿 Raça e Idade"]
 )
 
 # ------------------------------
@@ -33,7 +33,7 @@ menu = st.sidebar.selectbox(
 if menu == "📊 Renda":
     st.header("📊 Distribuição de Renda (Pizza)")
 
-    st.write("Gráfico em formato de pizza com legenda automática e percentuais.")
+    st.write("Gráfico em formato de pizza com legenda completa e percentuais internos.")
 
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
 
@@ -42,6 +42,7 @@ if menu == "📊 Renda":
     else:
         coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
 
+        # Agrupamento dos valores
         renda_grouped = renda[coluna].value_counts().reset_index()
         renda_grouped.columns = ["Categoria", "Valor"]
 
@@ -49,12 +50,32 @@ if menu == "📊 Renda":
             renda_grouped,
             names="Categoria",
             values="Valor",
-            hole=0.4,
-            title=f"Distribuição da coluna: {coluna} (Pizza)",
+            hole=0.35,
+            title=f"Distribuição da coluna: {coluna}",
         )
 
-        # Legenda + labels internas
-        fig.update_traces(textposition="inside", textinfo="percent+label")
+        # -----------------------------------------------
+        # >>>>>>> LEGENDA MELHORADA <<<<<<<<
+        # -----------------------------------------------
+        fig.update_layout(
+            legend=dict(
+                title="Categorias",
+                orientation="v",
+                yanchor="top",
+                y=0.98,
+                xanchor="left",
+                x=1.05,  # legenda à direita do gráfico
+                bgcolor="rgba(240,240,240,0.4)",
+                bordercolor="gray",
+                borderwidth=1
+            )
+        )
+
+        # Labels internas
+        fig.update_traces(
+            textposition="inside",
+            textinfo="percent+label",
+        )
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -80,10 +101,9 @@ else:
             names=cat,
             values=num,
             title=f"Distribuição de {num} por {cat}",
-            hole=0.4
+            hole=0.35
         )
 
-        # labels dentro e legenda
         fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
 
         st.plotly_chart(fig_pizza, use_container_width=True)
