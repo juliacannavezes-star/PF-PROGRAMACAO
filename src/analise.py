@@ -6,11 +6,12 @@ import plotly.express as px
 # FUNÇÃO PARA PADRONIZAR GÊNERO
 # ------------------------------
 def padronizar_genero(df):
-    genero_cols = [col for col in df.columns if "sex" in col.lower() or 
-                   "gênero" in col.lower() or 
+    genero_cols = [col for col in df.columns if 
+                   "sex" in col.lower() or 
                    "genero" in col.lower() or 
+                   "gênero" in col.lower() or 
                    "sexo" in col.lower()]
-    
+
     for col in genero_cols:
         df[col] = df[col].astype(str).str.lower().map({
             "f": "Feminino",
@@ -18,8 +19,8 @@ def padronizar_genero(df):
             "feminino": "Feminino",
             "m": "Masculino",
             "1": "Masculino",
-            "masculino": "Masculino"
-        }).fillna(df[col])  # mantém valores que não se encaixam
+            "masculino": "Masculino",
+        }).fillna(df[col])
 
     return df
 
@@ -27,7 +28,7 @@ def padronizar_genero(df):
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização com gráficos de pizza e legendas de gênero padronizadas.")
+st.write("Visualização interativa usando gráficos de pizza com legenda de gênero.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -53,44 +54,47 @@ menu = st.sidebar.selectbox(
 )
 
 # ------------------------------
-# ANÁLISE DE RENDA
+# ANÁLISE DE RENDA (PIZZA COM GÊNERO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda (Pizza)")
+    st.header("📊 Distribuição de Renda por Categoria (Pizza)")
 
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
+    cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
 
     if len(numeric_cols) == 0:
         st.warning("Nenhuma coluna numérica encontrada.")
     else:
-        coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
+        coluna_valor = st.selectbox("Selecione o valor numérico:", numeric_cols)
 
-        renda_grouped = renda[coluna].value_counts().reset_index()
-        renda_grouped.columns = ["Categoria", "Valor"]
-
-        fig = px.pie(
-            renda_grouped,
-            names="Categoria",
-            values="Valor",
-            hole=0.35,
-            title=f"Distribuição da coluna: {coluna}",
+        coluna_categoria = st.selectbox(
+            "Selecione a categoria para agrupar (inclui gênero):",
+            cat_cols
         )
 
-        # Legenda fixa + labels internas
+        # Agrupar os dados
+        grouped = renda.groupby(coluna_categoria)[coluna_valor].sum().reset_index()
+
+        fig = px.pie(
+            grouped,
+            names=coluna_categoria,
+            values=coluna_valor,
+            hole=0.4,
+            title=f"{coluna_valor} distribuído por {coluna_categoria}"
+        )
+
+        # Legenda + labels internas
+        fig.update_traces(textposition="inside", textinfo="percent+label")
         fig.update_layout(
             legend=dict(
                 title="Categorias",
                 orientation="v",
                 yanchor="top",
-                y=0.98,
+                y=0.99,
                 xanchor="left",
-                x=1.05,
-                bgcolor="rgba(240,240,240,0.4)",
-                bordercolor="gray",
-                borderwidth=1
+                x=1.05
             )
         )
-        fig.update_traces(textposition="inside", textinfo="percent+label")
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -111,7 +115,7 @@ else:
         names=cat,
         values=num,
         title=f"Distribuição de {num} por {cat}",
-        hole=0.35
+        hole=0.4
     )
 
     fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
