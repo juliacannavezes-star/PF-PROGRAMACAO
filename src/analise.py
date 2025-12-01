@@ -28,7 +28,7 @@ def padronizar_genero(df):
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa usando gráficos de pizza com legenda de gênero.")
+st.write("Visualização interativa do perfil da advocacia brasileira")
 
 # ------------------------------
 # LEITURA DOS DADOS
