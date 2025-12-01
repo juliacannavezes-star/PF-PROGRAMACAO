@@ -6,7 +6,7 @@ import plotly.express as px
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa das tabelas de renda e raça/idade usando gráficos de pizza.")
+st.write("Visualização interativa das tabelas de renda e raça/idade usando gráficos de pizza com legenda.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -28,12 +28,12 @@ menu = st.sidebar.selectbox(
 )
 
 # ------------------------------
-# ANÁLISE DE RENDA (AGORA SOMENTE PIZZA)
+# ANÁLISE DE RENDA (PIZZA)
 # ------------------------------
 if menu == "📊 Renda":
     st.header("📊 Distribuição de Renda (Pizza)")
 
-    st.write("Todos os gráficos de renda foram convertidos para pizza. Selecione uma coluna numérica para visualizar sua distribuição.")
+    st.write("Gráfico em formato de pizza com legenda automática e percentuais.")
 
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
 
@@ -42,7 +42,6 @@ if menu == "📊 Renda":
     else:
         coluna = st.selectbox("Selecione a coluna para visualizar:", numeric_cols)
 
-        # Criando proporções da coluna selecionada
         renda_grouped = renda[coluna].value_counts().reset_index()
         renda_grouped.columns = ["Categoria", "Valor"]
 
@@ -51,17 +50,21 @@ if menu == "📊 Renda":
             names="Categoria",
             values="Valor",
             hole=0.4,
-            title=f"Distribuição da coluna: {coluna} (Pizza)"
+            title=f"Distribuição da coluna: {coluna} (Pizza)",
         )
+
+        # Legenda + labels internas
+        fig.update_traces(textposition="inside", textinfo="percent+label")
+
         st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------
-# ANÁLISE DE RAÇA E IDADE (AGORA SOMENTE PIZZA)
+# ANÁLISE DE RAÇA E IDADE (PIZZA)
 # ------------------------------
 else:
     st.header("🧑🏽‍🧒🏿 Raça e Idade (Pizza)")
 
-    st.write("Todos os gráficos desta seção foram substituídos por gráficos de pizza.")
+    st.write("Gráfico em formato de pizza com legenda automática e percentuais.")
 
     cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
@@ -79,6 +82,10 @@ else:
             title=f"Distribuição de {num} por {cat}",
             hole=0.4
         )
+
+        # labels dentro e legenda
+        fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
+
         st.plotly_chart(fig_pizza, use_container_width=True)
 
 st.success("App carregado com sucesso!")
