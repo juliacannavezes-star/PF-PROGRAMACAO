@@ -5,8 +5,8 @@ import plotly.express as px
 # ------------------------------
 # TÍTULO
 # ------------------------------
-st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização dos dados do Perfil da Advocacia Brasileira, com base nos critérios de renda e de raça/idade a partir das tabelas de dados disponibilizadas pelo estudo da FGV disponível nesse link: https://conhecimento.fgv.br/sites/default/files/2025-01/publicacoes/perfil_adv_1o-estudo_demografico_da_advocacia_brasileira.pdf")
+st.title("Análise Interativa dos Dados sobre o Perfil da Advocacia Brasileira – PF Programação")
+st.write(" Esse site é um projeto elaborado pelas alunas Julia Fleury e Luiza Beyruth com o intuito de fornecer uma visualização dos dados do Perfil da Advocacia Brasileira, de uma maneira mais clara e nítida para os usuários, com base nos critérios de renda e de raça/idade a partir das tabelas de dados disponibilizadas pelo estudo da FGV disponível nesse link: https://conhecimento.fgv.br/sites/default/files/2025-01/publicacoes/perfil_adv_1o-estudo_demografico_da_advocacia_brasileira.pdf")
 
 # ------------------------------
 # LEITURA DOS DADOS
