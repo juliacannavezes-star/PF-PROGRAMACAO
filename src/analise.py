@@ -31,7 +31,7 @@ menu = st.sidebar.selectbox(
 # ANÁLISE DE RENDA (AJUSTADO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda (Gráfico de Pizza)")
+    st.header("📊 Distribuição de Renda")
 
     # seleciona apenas colunas numéricas
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
@@ -56,7 +56,7 @@ if menu == "📊 Renda":
 # ANÁLISE DE RAÇA E IDADE (AJUSTADO)
 # ------------------------------
 else:
-    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade (Gráfico de Pizza)")
+    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade")
 
     # identifica colunas numéricas
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
