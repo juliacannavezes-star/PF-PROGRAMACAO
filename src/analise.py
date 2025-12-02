@@ -6,7 +6,7 @@ import plotly.express as px
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos CSV fornecidos.")
+st.write("Esse site é um projeto elaborado pelas alunas Julia Fleury e Luiza Beyruth com o intuito de fornecer uma visualização dos dados do Perfil da Advocacia Brasileira, de uma maneira mais clara e nítida para os usuários, com base nos critérios de renda e de raça/idade a partir das tabelas de dados disponibilizadas pelo estudo da FGV disponível nesse link: https://conhecimento.fgv.br/sites/default/files/2025-01/publicacoes/perfil_adv_1o-estudo_demografico_da_advocacia_brasileira.pdf")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -31,7 +31,7 @@ menu = st.sidebar.selectbox(
 # ANÁLISE DE RENDA
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda (Gráfico de Pizza)")
+    st.header("📊 Distribuição de Renda")
 
     # mantém somente escolha numérica
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
@@ -65,7 +65,7 @@ if menu == "📊 Renda":
 # ANÁLISE DE RAÇA E IDADE
 # ------------------------------
 else:
-    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade (Gráfico de Pizza)")
+    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade")
 
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
 
