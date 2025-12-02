@@ -3,10 +3,32 @@ import pandas as pd
 import plotly.express as px
 
 # ------------------------------
+# FUNÇÃO PARA PADRONIZAR GÊNERO
+# ------------------------------
+def padronizar_genero(df):
+    genero_cols = [col for col in df.columns if 
+                   "sex" in col.lower() or 
+                   "genero" in col.lower() or 
+                   "gênero" in col.lower() or 
+                   "sexo" in col.lower()]
+
+    for col in genero_cols:
+        df[col] = df[col].astype(str).str.lower().map({
+            "f": "Feminino",
+            "0": "Feminino",
+            "feminino": "Feminino",
+            "m": "Masculino",
+            "1": "Masculino",
+            "masculino": "Masculino",
+        }).fillna(df[col])
+
+    return df
+
+# ------------------------------
 # TÍTULO
 # ------------------------------
-st.title("Análise Interativa dos Dados sobre o Perfil da Advocacia Brasileira – PF Programação")
-st.write(" Esse site é um projeto elaborado pelas alunas Julia Fleury e Luiza Beyruth com o intuito de fornecer uma visualização dos dados do Perfil da Advocacia Brasileira, de uma maneira mais clara e nítida para os usuários, com base nos critérios de renda e de raça/idade a partir das tabelas de dados disponibilizadas pelo estudo da FGV disponível nesse link: https://conhecimento.fgv.br/sites/default/files/2025-01/publicacoes/perfil_adv_1o-estudo_demografico_da_advocacia_brasileira.pdf")
+st.title("Análise Interativa dos Dados – PF Programação")
+st.write("Visualização interativa usando gráficos de pizza com legenda de gênero.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -15,6 +37,10 @@ st.write(" Esse site é um projeto elaborado pelas alunas Julia Fleury e Luiza B
 def load_data():
     renda = pd.read_csv("tabela2_renda.csv")
     raca_idade = pd.read_csv("tabela_9_raca-idade.csv")
+
+    renda = padronizar_genero(renda)
+    raca_idade = padronizar_genero(raca_idade)
+
     return renda, raca_idade
 
 renda, raca_idade = load_data()
@@ -28,53 +54,72 @@ menu = st.sidebar.selectbox(
 )
 
 # ------------------------------
-# ANÁLISE DE RENDA (AJUSTADO)
+# ANÁLISE DE RENDA (PIZZA COM GÊNERO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda")
+    st.header("📊 Distribuição de Renda por Categoria (Pizza)")
 
-    # seleciona apenas colunas numéricas
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
+    cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
 
     if len(numeric_cols) == 0:
-        st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
+        st.warning("Nenhuma coluna numérica encontrada.")
     else:
-        coluna = st.selectbox("Selecione a coluna numérica para visualizar:", numeric_cols)
+        coluna_valor = st.selectbox("Selecione o valor numérico:", numeric_cols)
 
-        # gráfico de pizza
-        fig = px.pie(
-            renda,
-            names=renda.index,
-            values=coluna,
-            title=f"Distribuição da coluna: {coluna}",
+        coluna_categoria = st.selectbox(
+            "Selecione a categoria para agrupar (inclui gênero):",
+            cat_cols
         )
 
-        fig.update_layout(showlegend=True)
+        # Agrupar os dados
+        grouped = renda.groupby(coluna_categoria)[coluna_valor].sum().reset_index()
+
+        fig = px.pie(
+            grouped,
+            names=coluna_categoria,
+            values=coluna_valor,
+            hole=0.4,
+            title=f"{coluna_valor} distribuído por {coluna_categoria}"
+        )
+
+        # Legenda + labels internas
+        fig.update_traces(textposition="inside", textinfo="percent+label")
+        fig.update_layout(
+            legend=dict(
+                title="Categorias",
+                orientation="v",
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=1.05
+            )
+        )
+
         st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------
-# ANÁLISE DE RAÇA E IDADE (AJUSTADO)
+# ANÁLISE DE RAÇA E IDADE
 # ------------------------------
 else:
-    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade")
+    st.header("🧑🏽‍🧒🏿 Raça e Idade (Pizza)")
 
-    # identifica colunas numéricas
+    cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
 
-    if len(num_cols) < 1:
-        st.warning("Não foi possível identificar colunas numéricas.")
-    else:
-        num = st.selectbox("Escolha a variável numérica:", num_cols)
+    cat = st.selectbox("Escolha a variável categórica:", cat_cols)
+    num = st.selectbox("Escolha a variável numérica:", num_cols)
 
-        # gráfico de pizza SOMENTE com variável numérica
-        fig = px.pie(
-            raca_idade,
-            names=raca_idade.index,
-            values=num,
-            title=f"Distribuição da variável: {num}",
-        )
+    fig_pizza = px.pie(
+        raca_idade,
+        names=cat,
+        values=num,
+        title=f"Distribuição de {num} por {cat}",
+        hole=0.4
+    )
 
-        fig.update_layout(showlegend=True)
-        st.plotly_chart(fig, use_container_width=True)
+    fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
+
+    st.plotly_chart(fig_pizza, use_container_width=True)
 
 st.success("App carregado com sucesso!")
