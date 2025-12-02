@@ -6,7 +6,7 @@ import plotly.express as px
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos CSV fornecidos.")
+st.write("Visualização dos dados do Perfil da Advocacia Brasileira, com base nos critérios de renda e de raça/idade a partir das tabelas de dados disponibilizadas pelo estudo da FGV disponível nesse link: https://conhecimento.fgv.br/sites/default/files/2025-01/publicacoes/perfil_adv_1o-estudo_demografico_da_advocacia_brasileira.pdf")
 
 # ------------------------------
 # LEITURA DOS DADOS
