@@ -3,32 +3,10 @@ import pandas as pd
 import plotly.express as px
 
 # ------------------------------
-# FUNÇÃO PARA PADRONIZAR GÊNERO
-# ------------------------------
-def padronizar_genero(df):
-    genero_cols = [col for col in df.columns if 
-                   "sex" in col.lower() or 
-                   "genero" in col.lower() or 
-                   "gênero" in col.lower() or 
-                   "sexo" in col.lower()]
-
-    for col in genero_cols:
-        df[col] = df[col].astype(str).str.lower().map({
-            "f": "Feminino",
-            "0": "Feminino",
-            "feminino": "Feminino",
-            "m": "Masculino",
-            "1": "Masculino",
-            "masculino": "Masculino",
-        }).fillna(df[col])
-
-    return df
-
-# ------------------------------
 # TÍTULO
 # ------------------------------
 st.title("Análise Interativa dos Dados – PF Programação")
-st.write("Visualização interativa usando gráficos de pizza com legenda de gênero.")
+st.write("Visualização dos dados de renda e raça/idade a partir dos arquivos CSV fornecidos.")
 
 # ------------------------------
 # LEITURA DOS DADOS
@@ -37,10 +15,6 @@ st.write("Visualização interativa usando gráficos de pizza com legenda de gê
 def load_data():
     renda = pd.read_csv("tabela2_renda.csv")
     raca_idade = pd.read_csv("tabela_9_raca-idade.csv")
-
-    renda = padronizar_genero(renda)
-    raca_idade = padronizar_genero(raca_idade)
-
     return renda, raca_idade
 
 renda, raca_idade = load_data()
@@ -54,72 +28,53 @@ menu = st.sidebar.selectbox(
 )
 
 # ------------------------------
-# ANÁLISE DE RENDA (PIZZA COM GÊNERO)
+# ANÁLISE DE RENDA (AJUSTADO)
 # ------------------------------
 if menu == "📊 Renda":
-    st.header("📊 Distribuição de Renda por Categoria (Pizza)")
+    st.header("📊 Distribuição de Renda (Gráfico de Pizza)")
 
+    # seleciona apenas colunas numéricas
     numeric_cols = renda.select_dtypes(include="number").columns.tolist()
-    cat_cols = renda.select_dtypes(exclude="number").columns.tolist()
 
     if len(numeric_cols) == 0:
-        st.warning("Nenhuma coluna numérica encontrada.")
+        st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
     else:
-        coluna_valor = st.selectbox("Selecione o valor numérico:", numeric_cols)
+        coluna = st.selectbox("Selecione a coluna numérica para visualizar:", numeric_cols)
 
-        coluna_categoria = st.selectbox(
-            "Selecione a categoria para agrupar (inclui gênero):",
-            cat_cols
-        )
-
-        # Agrupar os dados
-        grouped = renda.groupby(coluna_categoria)[coluna_valor].sum().reset_index()
-
+        # gráfico de pizza
         fig = px.pie(
-            grouped,
-            names=coluna_categoria,
-            values=coluna_valor,
-            hole=0.4,
-            title=f"{coluna_valor} distribuído por {coluna_categoria}"
+            renda,
+            names=renda.index,
+            values=coluna,
+            title=f"Distribuição da coluna: {coluna}",
         )
 
-        # Legenda + labels internas
-        fig.update_traces(textposition="inside", textinfo="percent+label")
-        fig.update_layout(
-            legend=dict(
-                title="Categorias",
-                orientation="v",
-                yanchor="top",
-                y=0.99,
-                xanchor="left",
-                x=1.05
-            )
-        )
-
+        fig.update_layout(showlegend=True)
         st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------
-# ANÁLISE DE RAÇA E IDADE
+# ANÁLISE DE RAÇA E IDADE (AJUSTADO)
 # ------------------------------
 else:
-    st.header("🧑🏽‍🧒🏿 Raça e Idade (Pizza)")
+    st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade (Gráfico de Pizza)")
 
-    cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
+    # identifica colunas numéricas
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
 
-    cat = st.selectbox("Escolha a variável categórica:", cat_cols)
-    num = st.selectbox("Escolha a variável numérica:", num_cols)
+    if len(num_cols) < 1:
+        st.warning("Não foi possível identificar colunas numéricas.")
+    else:
+        num = st.selectbox("Escolha a variável numérica:", num_cols)
 
-    fig_pizza = px.pie(
-        raca_idade,
-        names=cat,
-        values=num,
-        title=f"Distribuição de {num} por {cat}",
-        hole=0.4
-    )
+        # gráfico de pizza SOMENTE com variável numérica
+        fig = px.pie(
+            raca_idade,
+            names=raca_idade.index,
+            values=num,
+            title=f"Distribuição da variável: {num}",
+        )
 
-    fig_pizza.update_traces(textposition="inside", textinfo="percent+label")
-
-    st.plotly_chart(fig_pizza, use_container_width=True)
+        fig.update_layout(showlegend=True)
+        st.plotly_chart(fig, use_container_width=True)
 
 st.success("App carregado com sucesso!")
