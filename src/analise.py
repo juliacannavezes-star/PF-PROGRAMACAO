@@ -27,76 +27,71 @@ menu = st.sidebar.selectbox(
     ["📊 Renda", "🧑🏽‍🧒🏿 Raça e Idade"]
 )
 
-# ------------------------------------------------------------
-# ANÁLISE DE RENDA (SEM FILTROS, LEGENDA = GÊNERO)
-# ------------------------------------------------------------
+# ------------------------------
+# ANÁLISE DE RENDA
+# ------------------------------
 if menu == "📊 Renda":
     st.header("📊 Distribuição de Renda (Gráfico de Pizza)")
 
-    # Procurar coluna de gênero automaticamente
-    possible_gender_names = ["genero", "sexo", "gênero", "Gender", "Sexo"]
-    genero_col = None
-    for col in renda.columns:
-        if col.lower() in possible_gender_names:
-            genero_col = col
-            break
+    # mantém somente escolha numérica
+    numeric_cols = renda.select_dtypes(include="number").columns.tolist()
 
-    # Procurar uma coluna numérica automaticamente
-    num_cols = renda.select_dtypes(include="number").columns.tolist()
-
-    if genero_col is None:
-        st.error("Não foi encontrada uma coluna de gênero no CSV de renda.")
-    elif len(num_cols) == 0:
-        st.error("Não foi encontrada nenhuma coluna numérica na tabela de renda.")
+    if len(numeric_cols) == 0:
+        st.warning("Nenhuma coluna numérica encontrada na tabela de renda.")
     else:
-        valor_col = num_cols[0]  # escolhe automaticamente a primeira numérica
+        coluna = st.selectbox("Selecione a variável numérica:", numeric_cols)
 
-        fig = px.pie(
-            renda,
-            names=genero_col,
-            values=valor_col,
-            title=f"Distribuição da coluna '{valor_col}' por gênero",
-        )
+        # verifica se existe coluna de gênero
+        if "Genero" in renda.columns:
+            categoria = "Genero"
+        elif "Gênero" in renda.columns:
+            categoria = "Gênero"
+        else:
+            st.warning("Nenhuma coluna de gênero encontrada.")
+            categoria = None
 
-        fig.update_layout(
-            showlegend=True,
-            legend_title="Gênero"
-        )
+        if categoria:
+            fig = px.pie(
+                renda,
+                names=categoria,
+                values=coluna,
+                title=f"Distribuição de {coluna} por {categoria}"
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(showlegend=True)
+            st.plotly_chart(fig, use_container_width=True)
 
-# ------------------------------------------------------------
-# ANÁLISE DE RAÇA E IDADE (SEM FILTROS, LEGENDA = FAIXA ETÁRIA)
-# ------------------------------------------------------------
+# ------------------------------
+# ANÁLISE DE RAÇA E IDADE
+# ------------------------------
 else:
     st.header("🧑🏽‍🧒🏿 Análise por Raça e Idade (Gráfico de Pizza)")
 
-    # Procurar coluna categórica (faixa etária)
-    cat_cols = raca_idade.select_dtypes(exclude="number").columns.tolist()
-
-    # Procura automaticamente por uma coluna numérica
     num_cols = raca_idade.select_dtypes(include="number").columns.tolist()
 
-    if len(cat_cols) == 0:
-        st.error("Não foi encontrada nenhuma coluna categórica (ex.: faixa etária).")
-    elif len(num_cols) == 0:
-        st.error("Não foi encontrada nenhuma coluna numérica na base de raça e idade.")
+    if len(num_cols) < 1:
+        st.warning("Nenhuma coluna numérica encontrada.")
     else:
-        categoria = cat_cols[0]  # primeira categórica automaticamente
-        valor = num_cols[0]      # primeira numérica automaticamente
+        num = st.selectbox("Escolha a variável numérica:", num_cols)
 
-        fig = px.pie(
-            raca_idade,
-            names=categoria,
-            values=valor,
-            title=f"Distribuição da variável '{valor}' por {categoria}",
-        )
+        # legenda automática com faixa etária
+        if "Faixa Etária" in raca_idade.columns:
+            categoria = "Faixa Etária"
+        elif "Faixa_etaria" in raca_idade.columns:
+            categoria = "Faixa_etaria"
+        else:
+            st.warning("Nenhuma coluna de faixa etária encontrada.")
+            categoria = None
 
-        fig.update_layout(
-            showlegend=True,
-            legend_title="Faixa Etária"
-        )
+        if categoria:
+            fig = px.pie(
+                raca_idade,
+                names=categoria,
+                values=num,
+                title=f"{num} distribuído por {categoria}"
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(showlegend=True)
+            st.plotly_chart(fig, use_container_width=True)
 
 st.success("App carregado com sucesso!")
